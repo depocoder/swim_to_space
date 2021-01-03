@@ -19,16 +19,23 @@ async def blink(canvas, row, column, symbol='*'):
 
 
 def draw(canvas):
-    courutine = blink(canvas, row=5, column=20)
-    for i in range(5):
-        courutine.send(None)
-        canvas.border()
-        canvas.refresh()
-        time.sleep(1)
-  
+    courutines = []
+    for courutine_row in range(1, 19):
+        courutines.append(blink(canvas, row=courutine_row, column=20))
+    while True:
+        for courutine in courutines:
+            courutine.send(None)
+            draw_border(canvas)
+            time.sleep(0.01)
+
+
+def draw_border(canvas):
+    canvas.border()
+    canvas.refresh()
+
 
 if __name__ == '__main__':
-    while True:
-        curses.update_lines_cols()
-        curses.wrapper(draw)
-        curses.curs_set(False)
+    curses.update_lines_cols()
+    curses.wrapper(draw_border)
+    curses.curs_set(False)
+    curses.wrapper(draw)
