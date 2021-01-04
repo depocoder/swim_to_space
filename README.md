@@ -1,30 +1,21 @@
-#  
+#  swim_to_space
 
-## Описание проекта.   
-Этот проект позволяет...  
-    
-## Подготовка к запуску WIN.  
+Игра в комндной строке      
+      
+## Подготовка к запуску.    
+Уставновить [Python 3+](https://www.python.org/downloads/)    
+
 Установить, создать и активировать виртуальное окружение.
 ```
 pip3 install virtualenv
-python -m venv env
-env\scripts\activate
-pip3 install -r requirements.txt
-python main.py
+python3 -m venv env
+source env/bin/activate
 ```
 Установить библиотеки командой.  
 ```
- 
+pip3 install -r requirements.txt  
 ``` 
     
-## Запуск кода.  
 ```
-
-```
-# Аргументы
-...  
-    
-**Запуск кода с аргументами**   
-```
-python3 ...
+python3 main.py
 ```
