@@ -8,14 +8,18 @@ async def blink(canvas, row, column, symbol='*'):
         canvas.addstr(row, column, symbol, curses.A_DIM)
         await asyncio.sleep(0)
 
+        time.sleep(2)
         canvas.addstr(row, column, symbol)
         await asyncio.sleep(0)
 
+        time.sleep(0.3)
         canvas.addstr(row, column, symbol, curses.A_BOLD)
         await asyncio.sleep(0)
 
+        time.sleep(0.5)
         canvas.addstr(row, column, symbol)
         await asyncio.sleep(0)
+        time.sleep(0.3)
 
 
 def draw_stars(canvas):
@@ -25,10 +29,8 @@ def draw_stars(canvas):
     while True:
         for courutine in courutines:
             courutine.send(None)
-            draw_border(canvas)
             canvas.border()
             canvas.refresh()
-            time.sleep(0.01)
 
 
 if __name__ == '__main__':
