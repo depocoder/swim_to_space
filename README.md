@@ -15,6 +15,7 @@ source env/bin/activate
 ```
 pip3 install -r requirements.txt  
 ``` 
+Запуск кода    
     
 ```
 python3 main.py
