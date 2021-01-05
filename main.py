@@ -1,5 +1,6 @@
 import time
 import curses
+import random
 import asyncio
 
 
@@ -8,29 +9,36 @@ async def blink(canvas, row, column, symbol='*'):
         canvas.addstr(row, column, symbol, curses.A_DIM)
         await asyncio.sleep(0)
 
-        time.sleep(2)
+        time.sleep(0.01)
         canvas.addstr(row, column, symbol)
         await asyncio.sleep(0)
 
-        time.sleep(0.3)
+        time.sleep(0.01)
         canvas.addstr(row, column, symbol, curses.A_BOLD)
         await asyncio.sleep(0)
 
-        time.sleep(0.5)
         canvas.addstr(row, column, symbol)
         await asyncio.sleep(0)
-        time.sleep(0.3)
 
 
 def draw_stars(canvas):
     courutines = []
-    for courutine_row in range(1, 19):
-        courutines.append(blink(canvas, row=courutine_row, column=20))
+    max_row, max_column = canvas.getmaxyx()
+    positon_stars = []
+    for courutine_row in range(1, 100):
+        row = random.randint(1, max_row-1)
+        column = random.randint(1, max_column-1)
+        if [row, column] in positon_stars:
+            continue
+        symbol = random.choice('+*.:')
+        courutine = blink(canvas, row=row, column=column, symbol=symbol)
+        courutines.append(courutine)
+        positon_stars.append([row, column])
     while True:
-        for courutine in courutines:
-            courutine.send(None)
-            canvas.border()
-            canvas.refresh()
+        courutine = random.choice(courutines)
+        courutine.send(None)
+        canvas.border()
+        canvas.refresh()
 
 
 if __name__ == '__main__':
