@@ -5,7 +5,7 @@
 ## Подготовка к запуску.    
 Уставновить [Python 3+](https://www.python.org/downloads/)    
 
-Запуск игры    
+## Запуск игры 
     
 ```
 python3 main.py
