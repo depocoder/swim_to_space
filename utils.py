@@ -123,4 +123,5 @@ async def draw_frame(canvas, start_row, start_column, text, negative=False):
 
                 symbol = symbol if not negative else ' '
                 canvas.addch(row, column, symbol)
-        await asyncio.sleep(0)
+        break
+    await asyncio.sleep(0)
