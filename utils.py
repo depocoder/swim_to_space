@@ -2,12 +2,7 @@ import asyncio
 import curses
 import random
 
-
-SPACE_KEY_CODE = 32
-LEFT_KEY_CODE = 260
-RIGHT_KEY_CODE = 261
-UP_KEY_CODE = 259
-DOWN_KEY_CODE = 258
+from settings import *
 
 
 async def sleep(times: int):
@@ -62,6 +57,7 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         row += rows_speed
         column += columns_speed
 
+
 def read_controls(canvas):
     """Read keys pressed and returns tuple witl controls state."""
 
@@ -93,35 +89,66 @@ def read_controls(canvas):
     return rows_direction, columns_direction, space_pressed
 
 
-async def draw_frame(canvas, start_row, start_column, text, negative=False):
+def draw_frame(canvas, start_row, start_column, text, negative=False):
     """Draw multiline text fragment on canvas, erase text instead of drawing if negative=True is specified."""
-    while True:
-        rows_number, columns_number = canvas.getmaxyx()
 
-        for row, line in enumerate(text.splitlines(), round(start_row)):
-            if row < 0:
+    rows_number, columns_number = canvas.getmaxyx()
+
+    for row, line in enumerate(text.splitlines(), round(start_row)):
+        if row < 0:
+            continue
+
+        if row >= rows_number:
+            break
+
+        for column, symbol in enumerate(line, round(start_column)):
+            if column < 0:
                 continue
 
-            if row >= rows_number:
+            if column >= columns_number:
                 break
 
-            for column, symbol in enumerate(line, round(start_column)):
-                if column < 0:
-                    continue
+            if symbol == ' ':
+                continue
 
-                if column >= columns_number:
-                    break
+            # Check that current position it is not in a lower right corner of the window
+            # Curses will raise exception in that case. Don`t ask why…
+            # https://docs.python.org/3/library/curses.html#curses.window.addch
+            if row == rows_number - 1 and column == columns_number - 1:
+                continue
 
-                if symbol == ' ':
-                    continue
+            symbol = symbol if not negative else ' '
+            canvas.addch(row, column, symbol)
 
-                # Check that current position it is not in a lower right corner of the window
-                # Curses will raise exception in that case. Don`t ask why…
-                # https://docs.python.org/3/library/curses.html#curses.window.addch
-                if row == rows_number - 1 and column == columns_number - 1:
-                    continue
 
-                symbol = symbol if not negative else ' '
-                canvas.addch(row, column, symbol)
-        break
-    await asyncio.sleep(0)
+def change_control(
+        max_row, max_column, ship_row, ship_column, rows_direction, columns_direction
+):
+    if ship_row + BORDER != 0 and rows_direction == -1:
+        ship_row += rows_direction
+    elif ship_row + SHIP_ROW_SIZE != max_row and rows_direction == 1:
+        ship_row += rows_direction
+    if ship_column + BORDER != 0 and columns_direction == -1:
+        ship_column += columns_direction
+    elif ship_column + SHIP_COLUMN_SIZE != max_column and columns_direction == 1:
+        ship_column += columns_direction
+    return ship_row, ship_column
+
+
+async def draw_ship(canvas, ship_frames):
+    max_row, max_column = canvas.getmaxyx()
+
+    ship_row, ship_column = max_row // 2, max_column // 2
+    while True:
+        ship_frame = next(ship_frames)
+
+        draw_frame(canvas, ship_row, ship_column, ship_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, ship_row, ship_column, ship_frame, negative=True)
+
+        rows_direction, columns_direction, space_pressed = read_controls(canvas)
+        ship_row, ship_column = change_control(
+            max_row, max_column, ship_row,
+            ship_column, rows_direction, columns_direction
+        )
+
