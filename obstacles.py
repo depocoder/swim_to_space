@@ -11,6 +11,7 @@ class Obstacle:
         self.rows_size = rows_size
         self.columns_size = columns_size
         self.uid = uid
+        self.is_hit = False
 
     def get_bounding_box_frame(self):
         # increment box size to compensate obstacle movement

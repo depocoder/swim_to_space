@@ -59,6 +59,7 @@ async def fire(canvas, start_row, start_column, obstacles: list, rows_speed=-0.3
         column += columns_speed
         for obstacle in obstacles:
             if obstacle.has_collision(row, column):
+                obstacle.is_hit = True
                 return
 
 
@@ -185,11 +186,56 @@ async def fly_garbage(canvas, column, garbage_frame, obstacle, obstacles, speed=
     column = min(column, columns_number - 1)
 
     row = 0
-
+    frame_row, frame_column = get_frame_size(garbage_frame)
     while row < rows_number:
         draw_frame(canvas, row, column, garbage_frame)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, garbage_frame, negative=True)
         row += speed
         obstacle.row = row
+        if obstacle.is_hit:
+            await explode(canvas, row + frame_row // 2, column + frame_column // 2)
+            break
     obstacles.remove(obstacle)
+
+
+EXPLOSION_FRAMES = [
+    """\
+           (_)
+       (  (   (  (
+      () (  (  )
+        ( )  ()
+    """,
+    """\
+           (_)
+       (  (   (
+         (  (  )
+          )  (
+    """,
+    """\
+            (
+          (   (
+         (     (
+          )  (
+    """,
+    """\
+            (
+              (
+            (
+    """,
+]
+
+
+async def explode(canvas, center_row, center_column):
+    rows, columns = get_frame_size(EXPLOSION_FRAMES[0])
+    corner_row = center_row - rows / 2
+    corner_column = center_column - columns / 2
+
+    curses.beep()
+    for frame in EXPLOSION_FRAMES:
+
+        draw_frame(canvas, corner_row, corner_column, frame)
+
+        await asyncio.sleep(0)
+        draw_frame(canvas, corner_row, corner_column, frame, negative=True)
+        await asyncio.sleep(0)
