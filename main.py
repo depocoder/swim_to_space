@@ -57,7 +57,7 @@ def draw(canvas):
     COROUTINES.append(fill_orbit_with_garbage(canvas))
     COROUTINES.extend(generate_stars_coroutines(canvas))
     ship_frames = get_cycle_frames('rocket_frames')
-    COROUTINES.append(draw_ship(canvas, ship_frames))
+    COROUTINES.append(draw_ship(canvas, ship_frames, COROUTINES))
     while True:
         for coroutine in COROUTINES:
             try:

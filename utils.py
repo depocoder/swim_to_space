@@ -136,7 +136,7 @@ def change_control(
     return ship_row, ship_column
 
 
-async def draw_ship(canvas, ship_frames):
+async def draw_ship(canvas, ship_frames, coroutines: list):
     max_row, max_column = canvas.getmaxyx()
 
     ship_row, ship_column = max_row // 2, max_column // 2
@@ -150,6 +150,7 @@ async def draw_ship(canvas, ship_frames):
         draw_frame(canvas, ship_row, ship_column, ship_frame, negative=True)
 
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
+
         ship_row_before, ship_column_before = ship_row, ship_column
         ship_row, ship_column = change_control(
             max_row, max_column, ship_row,
@@ -160,6 +161,9 @@ async def draw_ship(canvas, ship_frames):
         )
         ship_row += row_speed
         ship_column += column_speed
+
+        if space_pressed:
+            coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER))
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
