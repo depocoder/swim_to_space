@@ -5,6 +5,7 @@ import random
 from itertools import cycle
 
 from settings import BORDER
+from physics import update_speed
 from utils import blink, draw_ship, fly_garbage, sleep
 
 COROUTINES = []

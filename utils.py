@@ -2,6 +2,7 @@ import asyncio
 import curses
 import random
 
+from physics import update_speed
 from settings import *
 
 
@@ -139,18 +140,26 @@ async def draw_ship(canvas, ship_frames):
     max_row, max_column = canvas.getmaxyx()
 
     ship_row, ship_column = max_row // 2, max_column // 2
+    row_speed = column_speed = 0
     while True:
         ship_frame = next(ship_frames)
 
         draw_frame(canvas, ship_row, ship_column, ship_frame)
         await asyncio.sleep(0)
+        await asyncio.sleep(0)
         draw_frame(canvas, ship_row, ship_column, ship_frame, negative=True)
 
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
+        ship_row_before, ship_column_before = ship_row, ship_column
         ship_row, ship_column = change_control(
             max_row, max_column, ship_row,
             ship_column, rows_direction, columns_direction
         )
+        row_speed, column_speed = update_speed(
+            row_speed, column_speed, ship_row - ship_row_before, ship_column - ship_column_before
+        )
+        ship_row += row_speed
+        ship_column += column_speed
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
