@@ -6,6 +6,23 @@ from physics import update_speed
 from settings import *
 
 
+def get_garbage_delay_tics(year):
+    if year < 1961:
+        return 25
+    elif year < 1969:
+        return 20
+    elif year < 1981:
+        return 14
+    elif year < 1995:
+        return 10
+    elif year < 2010:
+        return 8
+    elif year < 2020:
+        return 6
+    else:
+        return 2
+
+
 async def sleep(times: int):
     for _ in range(times):
         await asyncio.sleep(0)
@@ -140,7 +157,7 @@ def change_control(
     return ship_row, ship_column
 
 
-async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list):
+async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list, year: int):
     max_row, max_column = canvas.getmaxyx()
 
     ship_row, ship_column = max_row // 2, max_column // 2
@@ -165,7 +182,7 @@ async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list):
         ship_row += row_speed
         ship_column += column_speed
 
-        if space_pressed:
+        if space_pressed and year >= 2020:
             coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER, obstacles))
         for obstacle in obstacles:
             if obstacle.has_collision(ship_row, ship_column):
