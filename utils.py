@@ -29,7 +29,7 @@ async def blink(canvas, row, column, symbol='*'):
         await sleep(3)
 
 
-async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
+async def fire(canvas, start_row, start_column, obstacles: list, rows_speed=-0.3, columns_speed=0):
     """Display animation of gun shot, direction and speed can be specified."""
 
     row, column = start_row, start_column
@@ -57,6 +57,9 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         canvas.addstr(round(row), round(column), ' ')
         row += rows_speed
         column += columns_speed
+        for obstacle in obstacles:
+            if obstacle.has_collision(row, column):
+                return
 
 
 def read_controls(canvas):
@@ -136,7 +139,7 @@ def change_control(
     return ship_row, ship_column
 
 
-async def draw_ship(canvas, ship_frames, coroutines: list):
+async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list):
     max_row, max_column = canvas.getmaxyx()
 
     ship_row, ship_column = max_row // 2, max_column // 2
@@ -151,23 +154,31 @@ async def draw_ship(canvas, ship_frames, coroutines: list):
 
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
 
-        ship_row_before, ship_column_before = ship_row, ship_column
         ship_row, ship_column = change_control(
             max_row, max_column, ship_row,
             ship_column, rows_direction, columns_direction
         )
         row_speed, column_speed = update_speed(
-            row_speed, column_speed, ship_row - ship_row_before, ship_column - ship_column_before
+            row_speed, column_speed, rows_direction, columns_direction
         )
         ship_row += row_speed
         ship_column += column_speed
 
         if space_pressed:
-            coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER))
+            coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER, obstacles))
 
 
-async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
-    """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
+def get_frame_size(text):
+    """Calculate size of multiline text fragment, return pair — number of rows and colums."""
+
+    lines = text.splitlines()
+    rows = len(lines)
+    columns = max([len(line) for line in lines])
+    return rows, columns
+
+
+async def fly_garbage(canvas, column, garbage_frame, obstacle, obstacles, speed=0.5):
+    """Animate garbage, flying from top to bottom. Column position will stay same, as specified on start."""
     rows_number, columns_number = canvas.getmaxyx()
 
     column = max(column, 0)
@@ -180,4 +191,5 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, garbage_frame, negative=True)
         row += speed
-
+        obstacle.row = row
+    obstacles.remove(obstacle)

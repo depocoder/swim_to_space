@@ -1,14 +1,16 @@
+import asyncio
 import os
 import time
 import curses
 import random
 from itertools import cycle
 
+from obstacles import Obstacle, show_obstacles
 from settings import BORDER
-from physics import update_speed
-from utils import blink, draw_ship, fly_garbage, sleep
+from utils import blink, draw_ship, sleep, get_frame_size, draw_frame, fly_garbage
 
 COROUTINES = []
+OBSTACLES = []
 
 
 def get_cycle_frames(dir_to_frames, need_double=True):
@@ -46,9 +48,14 @@ async def fill_orbit_with_garbage(canvas):
     while True:
         await sleep(15)
         global COROUTINES
+        garbage_frame = next(garbage_frames)
         garbage_column = random.randint(1, max_column + BORDER)
+        frame_row, frame_column = get_frame_size(garbage_frame)
+        obstacle = Obstacle(0, garbage_column, frame_row, frame_column)
+        OBSTACLES.append(obstacle)
         COROUTINES.append(
-            fly_garbage(canvas, column=garbage_column, garbage_frame=next(garbage_frames))
+            fly_garbage(canvas, column=garbage_column,
+                        garbage_frame=garbage_frame, obstacle=obstacle, obstacles=OBSTACLES)
         )
 
 
@@ -57,7 +64,8 @@ def draw(canvas):
     COROUTINES.append(fill_orbit_with_garbage(canvas))
     COROUTINES.extend(generate_stars_coroutines(canvas))
     ship_frames = get_cycle_frames('rocket_frames')
-    COROUTINES.append(draw_ship(canvas, ship_frames, COROUTINES))
+    COROUTINES.append(draw_ship(canvas, ship_frames, COROUTINES, obstacles=OBSTACLES))
+    COROUTINES.append(show_obstacles(canvas, OBSTACLES))
     while True:
         for coroutine in COROUTINES:
             try:
