@@ -167,6 +167,20 @@ async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list):
 
         if space_pressed:
             coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER, obstacles))
+        for obstacle in obstacles:
+            if obstacle.has_collision(ship_row, ship_column):
+                await show_gameover(canvas)
+
+
+async def show_gameover(canvas):
+    with open('frames/gameover.txt') as file:
+        gameover_frame = file.read()
+    frame_row, frame_column = get_frame_size(gameover_frame)
+    max_row, max_column = canvas.getmaxyx()
+    gameover_row, gameover_column = max_row // 2 - frame_row // 2, max_column // 2 - frame_column // 2
+    while True:
+        draw_frame(canvas, gameover_row, gameover_column, gameover_frame)
+        await asyncio.sleep(0)
 
 
 def get_frame_size(text):
