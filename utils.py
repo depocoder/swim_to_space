@@ -146,13 +146,13 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
 def change_control(
         max_row, max_column, ship_row, ship_column, rows_direction, columns_direction
 ):
-    if ship_row + BORDER != 0 and rows_direction == -1:
+    if (ship_row + BORDER + rows_direction) > 0 > rows_direction:
         ship_row += rows_direction
-    elif ship_row + SHIP_ROW_SIZE != max_row and rows_direction == 1:
+    elif (ship_row + SHIP_ROW_SIZE + rows_direction) < max_row and rows_direction > 0:
         ship_row += rows_direction
-    if ship_column + BORDER != 0 and columns_direction == -1:
+    if (ship_column + BORDER + columns_direction) > 0 > columns_direction:
         ship_column += columns_direction
-    elif ship_column + SHIP_COLUMN_SIZE != max_column and columns_direction == 1:
+    elif (ship_column + SHIP_COLUMN_SIZE + columns_direction) < max_column and columns_direction > 1:
         ship_column += columns_direction
     return ship_row, ship_column
 
@@ -167,20 +167,21 @@ async def draw_ship(canvas, ship_frames, coroutines: list, obstacles: list, year
 
         draw_frame(canvas, ship_row, ship_column, ship_frame)
         await asyncio.sleep(0)
-        await asyncio.sleep(0)
         draw_frame(canvas, ship_row, ship_column, ship_frame, negative=True)
 
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
+
+        row_speed, column_speed = update_speed(
+            row_speed, column_speed, rows_direction, columns_direction
+        )
+
+        rows_direction += rows_direction + row_speed
+        columns_direction = columns_direction + column_speed
 
         ship_row, ship_column = change_control(
             max_row, max_column, ship_row,
             ship_column, rows_direction, columns_direction
         )
-        row_speed, column_speed = update_speed(
-            row_speed, column_speed, rows_direction, columns_direction
-        )
-        ship_row += row_speed
-        ship_column += column_speed
 
         if space_pressed and year >= 2020:
             coroutines.append(fire(canvas, ship_row, ship_column + PIXELS_TO_CENTER, obstacles))
